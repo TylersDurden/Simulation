@@ -141,6 +141,18 @@ def create_point_cloud(state_size, cloud_size, n_points, show):
     return cloud, points
 
 
+def fill_random_points(state, n_points, show):
+    cloud = {}
+    for i in range(n_points):
+        pt = spawn_random_point(state)
+        cloud[i] = pt
+        state[pt[0],pt[1]] = 1
+    if show:
+        plt.imshow(state, 'gray')
+        plt.show()
+    return cloud
+
+
 def create_font_mappings():
     alpha = ['a', 'b', 'c', 'd', 'e', 'f',
              'g', 'h', 'i', 'j', 'k', 'l',
@@ -258,6 +270,7 @@ def spawn_random_walk(position, n_steps):
         random_walk.append(directions[step])
         position = directions[step]
     return random_walk, choice_pool
+
 
 def calculatle_rvec(pt_a, pt_b):
     dx = pt_a[0]-pt_b[0]

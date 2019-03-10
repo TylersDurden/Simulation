@@ -259,8 +259,27 @@ def spawn_random_walk(position, n_steps):
         position = directions[step]
     return random_walk, choice_pool
 
+
 def calculatle_rvec(pt_a, pt_b):
     dx = pt_a[0]-pt_b[0]
     dy = pt_a[1]-pt_a[1]
     r = np.sqrt((dx**2)+(dy**2))
     return r
+
+
+def fill_random_points(state, n_points, show):
+    cloud = {}
+    for i in range(n_points):
+        dx = np.random.random_integers(0,np.array(state).shape[1]-1,1)[0]
+        dy = np.random.random_integers(0,np.array(state).shape[0]-1,1)[0]
+        pt = [dy, dx]
+        try:
+            cloud[i] = pt
+            state[pt[0], pt[1]] = 1
+        except:
+            pass
+    if show:
+        plt.imshow(state, 'gray')
+        plt.show()
+    return cloud
+

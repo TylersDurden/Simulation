@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import utility
 import time
+import sys
 
 
 def spawn_random_walk_pool(world, pool_size, walk_length):
@@ -57,18 +58,29 @@ def draw_walks_in_parallel(walk_data, state, erase, save):
     return film
 
 
-t0 = time.time()
-world = np.zeros((200, 200))
-pool_size = 2500
-n_steps = 220
+def demo():
+    world = np.zeros((200, 200))
+    pool_size = 2500
+    n_steps = 220
 
-random_walks_common = spawn_walk_pool_common_origin(pool_size, n_steps, [115, 115])
-random_walks = spawn_random_walk_pool(world,pool_size,n_steps)
+    random_walks_common = spawn_walk_pool_common_origin(pool_size, n_steps, [115, 115])
+    random_walks = spawn_random_walk_pool(world, pool_size, n_steps)
 
-print 'Finished. ['+str(time.time()-t0)+'s Elapsed]'
-print 'Rendering Simulation 1'
-datar = draw_walks_in_parallel(random_walks, world, True, {'do':False,'fps':50,'name':'randomly.mp4'})
-plt.close()
-print 'Rendering Simulation 2'
-common_meta = {'do': True, 'fps': 100, 'name': 'burst.mp4'}
-datac = draw_walks_in_parallel(random_walks_common, np.zeros((250, 250)), True, common_meta)
+    rand_meta = {'do': False, 'fps': 50, 'name': 'randomly.mp4'}
+    datar = draw_walks_in_parallel(random_walks, world, True, rand_meta)
+    plt.close()
+
+    common_meta = {'do': True, 'fps': 100, 'name': 'burst.mp4'}
+    datac = draw_walks_in_parallel(random_walks_common, np.zeros((250, 250)), True, common_meta)
+    return random_walks_common, random_walks
+
+
+def main():
+    t0 = time.time()
+    if '-d' in sys.argv:
+        rwc, rw = demo()
+        print 'Finished. [' + str(time.time() - t0) + 's Elapsed]'
+
+
+if __name__ == '__main__':
+    main()

@@ -43,14 +43,20 @@ def generate_random_col(primitives,depth, ncols, show):
     return columns
 
 
-def draw_walk(path, start, world):
+def draw_walk(path, start, world, save):
     f = plt.figure()
     film = []
     for step in path:
-        world[step[0],step[1]] = 1
-        film.append([plt.imshow(world, 'gray')])
-        world[step[0],step[1]] = 0
+        try:
+            world[step[0], step[1]] = 1
+            film.append([plt.imshow(world, 'gray')])
+            world[step[0], step[1]] = 0
+        except IndexError:
+            pass
     a = animation.ArtistAnimation(f,film,interval=40,blit=True,repeat_delay=900)
+    if save['do']:
+        w = FFMpegWriter(fps=30,bitrate=1800)
+        a.save(save['name'],writer=w)
     plt.show()
 
 

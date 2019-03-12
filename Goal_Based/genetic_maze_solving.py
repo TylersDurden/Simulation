@@ -65,35 +65,40 @@ def radial_wander(start, depth,generated_maze, show):
         walk, sequence = utility.spawn_random_walk(start, depth)
         rvec = []
         score = 0
+        sn = 0
         for step in walk:
             try:
-                if generated_maze[step[0], step[1]] == 1:
+                if generated_maze[step[0], step[1]] != 1:
                     score += 1
+                else:
+                    pass
             except IndexError:
                 pass
             rvec.append(utility.calculatle_rvec(step, start))
+            sn += 1
         dr = np.diff(np.array(rvec)[1:]) + np.array(rvec)[2:]
         dR = dr[len(dr) - 1] - dr[0]
         if score > best and dR > disp:
             best = score
             disp = dR
-            walker_pool_displacement[pt] = walk
-
+            walker_pool_displacement[best] = walk
+        if dR > 1:
+            score += 1
     if show:
         print " Best Path: " + str(best)
         print "Total Path length: " + str(len(walk))
         print "Score: " + str(score)
         print "Displacement: " + str(disp)
-        genetic_maze_builder.draw_walk(walk, start, generated_maze)
+        #genetic_maze_builder.draw_walk(walker_pool_displacement[best], start, generated_maze)
     return walker_pool_displacement, score
 
 
 start = [20,20]
 stop = [248, 28]
-batch_size = 200
+batch_size = 500
 depth = 100
-mgenes, scores = genetic_maze_builder.generate_primitives(36, (6, 6))
-maze = genetic_maze_builder.generate_random_col(mgenes,6,10, False)
+mgenes, scores = genetic_maze_builder.generate_primitives(48, (6, 6))
+maze = genetic_maze_builder.generate_random_col(mgenes,6,4, False)
 
 ''' STRATEGIES 
 [1] create an expanding search radius of random walks
@@ -108,4 +113,10 @@ faster
 '''     # TODO: Use a mix of random walking and conv weighted selecting
 # TODO: Resplice a sequence instead of terminating it when hitting obstacle ?
 
-radial_wander(start, depth,maze, True)
+sorted_walks, scores = radial_wander(start, depth,maze, True)
+highlight_reel = []
+for good_walks in sorted_walks.keys():
+    for step in sorted_walks[good_walks]:
+        highlight_reel.append(step)
+print "Replaying best " + str(len(sorted_walks.keys())) + " Walks "
+genetic_maze_builder.draw_walk(highlight_reel,start, maze, {'do':True,'name':'best.mp4'})

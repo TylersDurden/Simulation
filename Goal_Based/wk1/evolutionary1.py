@@ -1,70 +1,80 @@
 import matplotlib.pyplot as plt
 import scipy.ndimage as ndi
+import numpy as np
 import evoutils
 import time
-import numpy as np
+import sys
 
 
-def generate_random_pool(settings):
-    seed_data = {}
-    random_displacements = {}
-    verbose = False
-    if 'print_outs' in settings.keys():
-        verbose = True
-    batch_size = settings['pool_size']
-    walk_length = settings['walk_length']
-    for pool_id in range(batch_size):
-        step = settings['start']
-        steps = []
-        displacement = []
-        for s in np.random.random_integers(1,9,walk_length).flatten():
-            options = {1: [step[0] - 1, step[1] - 1],
-                       2: [step[0] - 1, step[1]],
-                       3: [step[0] - 1, step[1] + 1],
-                       4: [step[0] - 1, step[1]],
-                       5: step,
-                       6: [step[0] + 1, step[1]],
-                       7: [step[0] + 1, step[1] - 1],
-                       8: [step[0] + 1, step[1]],
-                       9: [step[0] + 1, step[1] + 1]}
-            step = options[s]
-            steps.append(options[s])
-            displacement.append(evoutils.get_separation(settings['start'],options[s]))
-        seed_data[pool_id] = steps
-        random_displacements[pool_id] = displacement
-    n_steps_total = len(seed_data.keys())*len(seed_data.values())
-    if verbose:
-        print "Finished Simulation "
-        print '\033[1mN Batches: '+str(batch_size)
-        print 'Walk Length: ' + str(walk_length)
-        print str(n_steps_total) + ' Steps Total\033[0m'
-    return seed_data, random_displacements
+class EvolutionaryCrawler:
+    DNA = {}
+    n_batches = 0
+    n_walks_per_batch = 0
+    n_steps_per_walk = 0
+    world = [[]]
+
+    def __init__(self, genes, paths):
+        self.DNA = genes
+        self.n_batches = len(genes.keys())
+        self.n_walks_per_batch = len(genes[genes.keys()[0]])
+        self.n_steps_per_walk = len(genes[genes.keys()[0]][0])
+        # Generate a landscape for the walk to attempt to navigate
+        self.world = evoutils.generate_random_landscape(250, 250, 4)
+
+    def batch_cycle(self):
+        n_steps = 0
+        steps = 0
+        for batch in self.DNA.keys():
+            for walkers in range(self.n_walks_per_batch):
+                for step in self.DNA[self.DNA.keys()[batch]][walkers]:
+
+                    n_steps += 1
+
+        print "FINISHED " + str(n_steps) + " WALKS TOTAL"
+        print steps
+        
+    def show_fields(self):
+        print "N Batches: " + str(self.n_batches)
+        print "Batch Size: " + str(self.n_walks_per_batch)
+        print "N Steps Per Walk: " + str(self.n_steps_per_walk)
+
+
+def generate_universal_surface(settings):
+    randomness = 0.3
+    if 'random' in settings.keys():
+        randomness = settings['random']
 
 
 def main():
+    full_scale = True
     t0 = time.time()
-    settings = {'print_outs': True,
-                'start': [],
-                'stop': [],
+
+    # SETUP #
+    settings = {'print_outs': False,
+                'start': [0, 0],
+                'stop': [100, 100],
                 'r0': 0,
-                'debugging': True,
+                'debugging': False,
                 'randomized': True,
                 'pool_size': 100,
                 'walk_length': 150}
-    start = [0, 0]
-    goal = [100, 100]
-    r0 = evoutils.get_separation(start, goal)
-    settings['start'] = start
-    settings['stop'] = goal
+
+    r0 = evoutils.get_separation(settings['start'], settings['stop'])
     settings['r0'] = r0
 
-    seed_pool, walk_traces = generate_random_pool(settings)
-    print str(time.time()-t0) + 's Elapsed'
-    evoutils.show_bulk_data(walk_traces)
-    '''
-    get the distribution of end displacements and sort paths based on this
-    get the distribution of min dist to goal and sort paths based on this
-    '''
+    # MODES OF OPERATION #
+    if 'one_shot' in sys.argv:
+        basic_seed, disp_tracks = evoutils.generate_random_pool(settings)
+        evoutils.show_bulk_data(disp_tracks)
+        full_scale = False
+
+    if full_scale:
+        genetics, traces = evoutils.pool_initialization(settings, 10)
+        ec1 = EvolutionaryCrawler(genetics, traces)
+        ec1.show_fields()
+        ec1.batch_cycle()
+
+    print str(time.time() - t0) + 's Elapsed'
 
 
 if __name__ == '__main__':

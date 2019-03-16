@@ -13,3 +13,5 @@ random walks.
 Same thing as last week, but improving the search implementation
 by doing more careful pruning and changing the way fitness is 
 evaluated. 
+
+![InitialPop](https://raw.githubusercontent.com/TylersDurden/Simulation/master/Goal_Based/wk1/Initial_Population.png)

@@ -5,6 +5,7 @@ Simulations
 First attempts with genetic algorithms. Doing random walks and
 using evolution to minimize the distance to a goal, starting with
 random walks. 
+[Example](https://www.youtube.com/embed/fgHmwojZgBo)
 
 ## Week 1
 Same thing as last week, but improving the search implementation

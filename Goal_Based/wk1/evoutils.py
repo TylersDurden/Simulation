@@ -18,9 +18,15 @@ def get_separation(a, b):
     return np.sqrt((dx**2)+(dy**2))
 
 
-def show_bulk_data(data):
+def show_bulk_data(data, labels):
     for line in data.values():
         plt.plot(line)
+    if 'xlabel' in labels.keys():
+        plt.xlabel(labels['xlabel'])
+    if 'ylabel' in labels.keys():
+        plt.ylabel(labels['ylabel'])
+    if 'title' in labels.keys():
+        plt.title(labels['title'])
     plt.show()
 
 
@@ -59,6 +65,25 @@ def spawn_random_walk(position, n_steps):
         random_walk.append(directions[step])
         position = directions[step]
     return random_walk, choice_pool
+
+
+def dna2steps(starting_position, choices):
+    walk = list()
+    position = starting_position
+    for step in choices:
+
+        directions = {1: [position[0] - 1, position[1] - 1],
+                      2: [position[0] - 1, position[1]],
+                      3: [position[0] - 1, position[1] + 1],
+                      4: [position[0], position[1] - 1],
+                      5: position,
+                      6: [position[0], position[1] + 1],
+                      7: [position[0] + 1, position[1] - 1],
+                      8: [position[0] + 1, position[1]],
+                      9: [position[0] + 1, position[0] + 1]}
+        position = directions[step]
+        walk.append(position)
+    return walk
 
 
 def generate_random_pool(settings):
@@ -112,12 +137,48 @@ def pool_initialization(settings, batches):
 
 
 def generate_random_landscape(M, N, bit_depth):
+    """
+    Manipulates random noise into making an interesting
+    randomly distributed pattern of white tubules with
+    pockets of darkness appearing at various points on
+    landscape. This provides a rich world for crawlers,
+    and pixel values that are highly non linear!
+    :param M:
+    :param N:
+    :param bit_depth:
+    :return:
+    """
     test = np.random.random_integers(0, bit_depth, M*N).reshape((M, N))
     reduction = [[1,1,1,1,1],
                  [1,1,1,1,1],
                  [1,1,0,1,1],
                  [1,1,1,1,1],
                  [1,1,1,1,1]]
-    t0 = ndi.convolve(test, reduction, origin=0)
-    return t0
+    t0 = ndi.gaussian_filter(ndi.convolve(test, reduction, origin=0),sigma=1)
+    avg = t0.mean()
+    t0 = np.abs(t0 - avg*np.ones(t0.shape))
+    world = (ndi.gaussian_laplace(t0,sigma=1))
+    plt.title('WORLD ['+str(M)+'x'+str(N)+']')
+    plt.imshow(world, 'gray')
+    plt.show()
+    return world
 
+
+def generate_simple_landscape(M, N, difficulty):
+    state = np.zeros((M,N))
+    for i in range(difficulty):
+        pt = spawn_random_point(state)
+
+    return state
+
+
+def animate_walk(start, walk, world):
+    reel = list()
+    f = plt.figure()
+    for step in walk:
+        world[start[0]-2:start[0],start[1]-2:start[1]] = 0
+        world[step[0]-2:step[0],step[1]-2:step[1]] = 1
+        start = step
+        reel.append([plt.imshow(world, 'gray')])
+    a = animation.ArtistAnimation(f, reel, interval=40, blit=True, repeat_delay=900)
+    plt.show()

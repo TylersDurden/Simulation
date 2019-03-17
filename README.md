@@ -15,3 +15,11 @@ by doing more careful pruning and changing the way fitness is
 evaluated. 
 
 ![InitialPop](https://raw.githubusercontent.com/TylersDurden/Simulation/master/Goal_Based/wk1/Initial_Population.png)
+
+One of the most challenging aspects of this is first pruning the population
+and then evaluating them on fitness. The efficacy of pruning will make the
+mutations more effective, and the quality of the fitness function will make
+mutation and crossover more efficient. The paths that are pruned out are 
+replaced with random seeds mutated with some fraction of survivors. 
+
+![pruning](https://raw.githubusercontent.com/TylersDurden/Simulation/master/Goal_Based/wk1/pruning.png)

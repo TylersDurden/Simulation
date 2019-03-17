@@ -30,6 +30,21 @@ def show_bulk_data(data, labels):
     plt.show()
 
 
+def show_bulk_subplot(dataA, dataB,labels):
+    f, ax = plt.subplots(1, 2, figsize=(12, 6))
+    ax[0].grid()
+    ax[1].grid()
+    for line in dataA.values():
+        ax[0].plot(line)
+    for l in dataB.values():
+        ax[1].plot(l)
+    if 'title' in labels['f1'].keys():
+        ax[0].set_title(labels['f1']['title'])
+    if 'title' in labels['f2'].keys():
+        ax[1].set_title(labels['f2']['title'])
+    plt.show()
+
+
 def spawn_random_point(state):
     # Initialize a random position
     x = np.random.randint(0, state.shape[0], 1, dtype=int)

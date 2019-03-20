@@ -151,7 +151,7 @@ def pool_initialization(settings, batches):
     return genetics, external
 
 
-def generate_random_landscape(M, N, bit_depth):
+def generate_random_landscape(M, N, bit_depth, show):
     """
     Manipulates random noise into making an interesting
     randomly distributed pattern of white tubules with
@@ -173,9 +173,10 @@ def generate_random_landscape(M, N, bit_depth):
     avg = t0.mean()
     t0 = np.abs(t0 - avg*np.ones(t0.shape))
     world = (ndi.gaussian_laplace(t0,sigma=1))
-    plt.title('WORLD ['+str(M)+'x'+str(N)+']')
-    plt.imshow(world, 'gray')
-    plt.show()
+    if show:
+        plt.title('WORLD [' + str(M) + 'x' + str(N) + ']')
+        plt.imshow(world, 'gray')
+        plt.show()
     return world
 
 
@@ -197,3 +198,78 @@ def animate_walk(start, walk, world):
         reel.append([plt.imshow(world, 'gray')])
     a = animation.ArtistAnimation(f, reel, interval=40, blit=True, repeat_delay=900)
     plt.show()
+
+
+def preview(images):
+    f, ax = plt.subplots(1, len(images.keys()))
+    ii = 0
+    for imat in images.values():
+        ax[ii].imshow(imat, 'gray')
+        ax[ii].set_title(images.keys()[ii])
+        ii += 1
+    plt.show()
+
+
+def add_grid(divs, test_slide):
+    X = test_slide.shape[0]
+    Y = test_slide.shape[1]
+    dx = np.linspace(1, X - 1, divs)
+    dy = np.linspace(1, Y - 1, divs)
+    line = test_slide.min()
+    for x in dy:
+        for y in dx:
+            test_slide[int(y):, int(x)] = line
+            test_slide[int(y), int(x):] = line
+    return test_slide
+
+
+def bfs(graph_data, start):
+    g = nx.from_dict_of_lists(graph_data)
+    path = list()
+    queue = [start]
+    queued = list()
+    while queue:
+        vertex = queue.pop()
+        for node in graph_data[vertex]:
+            if node not in queued:
+                queued.append(node)
+                queue.append(node)
+                path.append([vertex, node])
+    return path
+
+
+def dfs(graph, start):
+    stack = [start]
+    parents = {start:start}
+    path = list()
+    while stack:
+        vertex = stack.pop(-1)
+        for node in graph[vertex]:
+            if node not in parents:
+                parents[node] = vertex
+                stack.append(node)
+        path.append([parents[vertex], vertex])
+    return path[1:]
+
+
+def create_point_cloud(state_size, cloud_size, n_points, show):
+    asize = cloud_size
+    bsize = state_size
+    pad = (bsize - asize) / 2
+    blob = np.zeros((asize, asize))
+    points = {}
+    ii = 0
+    for i in range(n_points):
+        point = spawn_random_point(np.zeros((asize, asize)))
+        r = np.sqrt(((point[0] - pad) * (point[0] - pad) + (point[1] - pad) * (point[1] - pad)))
+        if r <= (asize - pad):
+            blob[point[0], point[1]] = 1
+            points[ii] = point
+        ii += 1
+    cloud = np.zeros((bsize, bsize))
+    cloud[pad:bsize-pad, pad:bsize-pad] = blob
+    # Show the cloud if flagged
+    if show:
+        plt.imshow(cloud, 'gray')
+        plt.show()
+    return cloud, points

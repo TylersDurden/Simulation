@@ -60,8 +60,9 @@ def draw_centered_circle(canvas, radius, show):
 
 def draw_centered_box(canvas, sz, value, show):
     cx = np.array(canvas).shape[0]/2
-    cy = np.array(canvas).shape[1]/2
-    np.array(canvas)[cx-sz:cx+sz,cy-sz:cy+sz] = value
+    canvas = np.array(canvas)
+    cy = canvas.shape[1]/2
+    canvas[cx-sz:cx+sz,cy-sz:cy+sz] = value
 
     if show:
         plt.imshow(np.array(canvas), 'gray')
@@ -143,7 +144,25 @@ def spawn_random_walk(position, n_steps):
                       6: [position[0], position[1]+1],
                       7: [position[0]+1, position[1]-1],
                       8: [position[0]+1, position[1]],
-                      9: [position[0]+1, position[0]+1]}
-        random_walk.append(directions[step])
+                      9: [position[0]+1, position[1]+1]}
         position = directions[step]
+        random_walk.append(directions[step])
     return random_walk, choice_pool
+
+
+def ind2sub(index,dims):
+    """
+    Given an index and array dimensions,
+    convert an index to [x,y] subscript pair.
+    :param index:
+    :param dims:
+    :return tuple - subscripts :
+    """
+    subs = []
+    ii = 0
+    for y in range(dims[1]):
+        for x in range(dims[0]):
+            if index==ii:
+                subs = [x,y]
+                return subs
+            ii +=1

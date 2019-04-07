@@ -6,7 +6,7 @@ import utility
 import sys
 
 
-def predatory_chase(path, opts, complex):
+def predatory_chase(path, opts):
     start = opts['start']
     tracker = []
     chase = []
@@ -147,6 +147,8 @@ def complex_chase(prey_start, pred_start, n_steps, activation):
         except IndexError:
             pass
     a = animation.ArtistAnimation(f,simulation,interval=70,blit=True,repeat_delay=900)
+    w = FFMpegWriter(fps=70,bitrate=1800)
+    a.save('chase.mp4',writer=w)
     plt.show()
 
     plt.close()
@@ -157,7 +159,7 @@ def complex_chase(prey_start, pred_start, n_steps, activation):
 
 def main():
     if '-demo' in sys.argv:
-        prey_start = [100,130]
+        prey_start = [150,50]
         pred_start = [200,200]
         one_way_chase(prey_start, pred_start)
     else:

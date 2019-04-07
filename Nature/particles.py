@@ -66,7 +66,7 @@ def demo():
     random_walks_common = spawn_walk_pool_common_origin(pool_size, n_steps, [115, 115])
     random_walks = spawn_random_walk_pool(world, pool_size, n_steps)
 
-    rand_meta = {'do': False, 'fps': 50, 'name': 'randomly.mp4'}
+    rand_meta = {'do': True, 'fps': 50, 'name': 'randomly.mp4'}
     datar = draw_walks_in_parallel(random_walks, world, True, rand_meta)
     plt.close()
 

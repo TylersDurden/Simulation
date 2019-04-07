@@ -137,13 +137,13 @@ def spawn_random_walk(position, n_steps):
     random_walk = list()
     for step in choice_pool:
         directions = {1: [position[0]-1, position[1]-1],
-                      2: [position[0]-1, position[1]],
-                      3: [position[0]-1, position[1]+1],
-                      4: [position[0], position[1]-1],
+                      2: [position[0], position[1]-1],
+                      3: [position[0]+1, position[1]-1],
+                      4: [position[0]-1, position[1]],
                       5: position,
-                      6: [position[0], position[1]+1],
-                      7: [position[0]+1, position[1]-1],
-                      8: [position[0]+1, position[1]],
+                      6: [position[0]+1, position[1]],
+                      7: [position[0]-1, position[1]+1],
+                      8: [position[0], position[1]+1],
                       9: [position[0]+1, position[1]+1]}
         position = directions[step]
         random_walk.append(directions[step])

@@ -73,10 +73,19 @@ class ComplexChase:
         plt.imshow(state)
         plt.title('INITIAL_STATE')
         plt.show()
+
         # Predators have initial advantage and scope world first
+        pred_rvecs = {}
+        for pred_pos in self.Predator_Starts.values():
+            for prey_pos in self.Prey_Starts.values():
+                pred_rvecs[float(utility.get_displacement([pred_pos[0], pred_pos[1]],
+                                                          [prey_pos[0], pred_pos[1]]))] = \
+                    [pred_pos, prey_pos]
 
-
-
+        '''    Now Do the Chasing    '''
+        # TODO: How Will Predators Choose WHICH prey to chase first?
+        # TODO: Make them know to switch targets if another is closer?
+        # TODO: Remove prey from state and calculations after captured
 
 def main():
     # Define World Parameters
@@ -84,7 +93,7 @@ def main():
     height = 250
 
     N_Predators = 2
-    N_Prey = 10
+    N_Prey = 3
 
     # Simulation Parameters
     N_Steps = 200

@@ -79,7 +79,7 @@ def one_way_chase(prey_start, pred_start):
     pred_steps, prey_moves, caught = predatory_chase(prey_seed, {'start': [200, 200]})
     if caught:
         print 'Captured!'
-    draw_chase(prey_moves, pred_steps, pred_start, False, {'fps': 50, 'name': 'basic_chase.mp4'})
+    draw_chase(prey_moves, pred_steps, pred_start, True, {'fps': 50, 'name': 'basic_chase.mp4'})
 
 
 # TODO: Complex chase freezes when prey gets closer

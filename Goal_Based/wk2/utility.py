@@ -205,7 +205,7 @@ def spawn_random_walk(position, n_steps):
                       9: [position[0]+1, position[1]+1]}
         position = directions[step]
         random_walk.append(directions[step])
-    return random_walk, choice_pool
+    return random_walk
 
 
 def get_displacement(pt_a, pt_b):

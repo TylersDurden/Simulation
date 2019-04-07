@@ -37,7 +37,7 @@ def draw_walks_in_parallel(walk_data, state, erase, save):
 
     for i in range(ns):
         for step in range(nk):
-            if erase and i>=1:
+            if erase and i >= 1:
                 try:
                     s = walk_data[step][i-1]
                     state[s[0], s[1]] = 0

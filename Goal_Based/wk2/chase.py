@@ -7,6 +7,19 @@ import sys
 
 
 def predatory_chase(path, opts):
+    """
+    :: Predatory_Chase ::
+    Given the path of given prey, and some chase
+    parameter options (opts), this function starts
+    from the given arbitrary location and using the
+    the same number of steps as the prey, a predator
+    attempts to catch the prey.
+    :param path:
+    :param opts:
+    :return predatorPath []
+    :return preyPath []
+    :return captured bool
+    """
     start = opts['start']
     tracker = []
     chase = []
@@ -69,6 +82,7 @@ def one_way_chase(prey_start, pred_start):
     draw_chase(prey_moves, pred_steps, pred_start, False, {'fps': 50, 'name': 'basic_chase.mp4'})
 
 
+# TODO: Complex chase freezes when prey gets closer
 def complex_chase(prey_start, pred_start, n_steps, activation):
     f = plt.figure()
     prey_seed_steps, sequence = utility.spawn_random_walk(prey_start, n_steps)

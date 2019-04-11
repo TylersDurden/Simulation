@@ -35,3 +35,57 @@ the predator attempts to close in and capture the prey over the course of it's o
 highly targeted walk. 
 
 ![chase](https://raw.githubusercontent.com/TylersDurden/Simulation/master/Videos/basic_chase.mp4)  
+```
+______________________________
+|       ~ SIMULATION ~       |     
+|----------------------------|
+├── Emergent
+│   ├── imutil.py
+│   ├── imutil.pyc
+│   └── test.py
+├── Goal_Based
+│   ├── wk0
+│   │   ├── best.mp4
+│   │   ├── brute_force.png
+│   │   ├── experiment.py
+│   │   ├── genetic_maze_builder.py
+│   │   ├── genetic_maze_builder.pyc
+│   │   ├── genetic_maze_solving.py
+│   │   ├── highlights.mp4
+│   │   ├── rockets.py
+│   │   ├── utility.py
+│   │   └── utility.pyc
+│   ├── wk1
+│   │   ├── evolutionary1.py
+│   │   ├── evoutils.py
+│   │   ├── evoutils.pyc
+│   │   ├── Initial_Population.png
+│   │   └── pruning.png
+│   └── wk2
+│       ├── chase.py
+│       ├── chase.pyc
+│       ├── dynamic_chase.py
+│       ├── prey_evolution.py
+│       ├── utility.py
+│       └── utility.pyc
+├── Nature
+│   ├── bloom.py
+│   ├── dla2.py
+│   ├── genetic_walks.py
+│   ├── GOL.py
+│   ├── particles.py
+│   ├── space
+│   │   ├── galactic.py
+│   │   ├── imutil.py
+│   │   └── imutil.pyc
+│   ├── utility.py
+│   └── utility.pyc
+├── README.md
+└── Videos
+    ├── basic_chase.mp4
+    ├── burst.mp4
+    ├── common_origin_fireflies.mp4
+    ├── common_origin.mp4
+    └── randomly.mp4
+```
+8 directories, 40 files

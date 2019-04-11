@@ -7,6 +7,43 @@ import time
 import sys
 
 
+class Predator:
+    x = 0
+    y = 0
+    prey = []
+    target = []
+    steps = []
+    displacement = []
+
+    def __init__(self,position):
+        self.x = position[0]
+        self.y = position[1]
+
+    def assign_targets(self,prey):
+        [self.prey.append(target) for target in prey]
+
+    def asses_targets(self):
+        displacements = {}
+        for prey in self.prey:
+            displacements[float(utility.get_displacement([self.x,self.y], [int(prey[0]),int(prey[1])]))] =\
+                [int(prey[0]),int(prey[1])]
+        closest = np.array(displacements.keys()).min()
+        self.target = closest
+
+    def set_position(self, position):
+        self.x = position[0]
+        self.y = position[1]
+
+class Prey:
+    x = 0
+    y = 0
+    steps = []
+
+    def __init__(self, position):
+        self.x = position[0]
+        self.y = position[1]
+
+
 class ComplexChase:
     width = 0
     height = 0
@@ -63,29 +100,87 @@ class ComplexChase:
         print '\033[1m\033[32m========================= :: BEGINNING_SIMULATION :: =======' \
               '====================\033[0m'
 
-    def run(self):
-        # Setup Initial State
+    def initialize_state(self):
         state = np.zeros((self.width, self.height, 3))
         for pdpos in self.Predator_Starts.values():
-            state[pdpos[0],pdpos[1],:] = self.R
+            state[pdpos[0], pdpos[1], :] = self.R
         for pypos in self.Prey_Starts.values():
-            state[pypos[0],pypos[1],:] = self.B
-        plt.imshow(state)
-        plt.title('INITIAL_STATE')
-        plt.show()
+            state[pypos[0], pypos[1], :] = self.B
+        # plt.imshow(state)
+        # plt.title('INITIAL_STATE')
+        # plt.show()
+        return state
+
+    def run(self):
+        # Setup Initial State
+        state = self.initialize_state()
 
         # Predators have initial advantage and scope world first
-        pred_rvecs = {}
-        for pred_pos in self.Predator_Starts.values():
-            for prey_pos in self.Prey_Starts.values():
-                pred_rvecs[float(utility.get_displacement([pred_pos[0], pred_pos[1]],
-                                                          [prey_pos[0], pred_pos[1]]))] = \
-                    [pred_pos, prey_pos]
+        Predators = self.initialize_predators()
 
-        '''    Now Do the Chasing    '''
+        # Now set up the Prey
+        Prey = self.initialize_prey()
+
+        f = plt.figure()
+        film = []
+        # Do the chasing
+        for step in range(self.N_Steps):
+            for prey in Prey:
+                try:
+                    pos = prey.steps[step]
+                    for predator in Predators:
+                        target = prey
+                        dx = prey.x-predator.x
+                        dy = prey.y-predator.y
+                        r = dx**2+dy**2
+                        predator.displacement.append(r)
+                        if np.abs(dx) > np.abs(dy):
+                            if dx < 0:
+                                predator.set_position([predator.x - 1, predator.y])
+                            if dx > 0:
+                                predator.set_position([predator.x + 1, predator.y])
+                        if abs(dx) < abs(dy):
+                            if dy > 0:
+                                predator.set_position([predator.x, predator.y + 1])
+                            if dy < 0:
+                                predator.set_position([predator.x, predator.y - 1])
+                        predator.steps.append([predator.x, predator.y])
+                        state[predator.x, predator.y, :] = self.R
+                    state[pos[0], pos[1], :] = self.B
+                    film.append([plt.imshow(state)])
+
+                except IndexError:
+                    pass
+
+        a = animation.ArtistAnimation(f,film,interval=40,blit=True,repeat_delay=900)
+        plt.show()
         # TODO: How Will Predators Choose WHICH prey to chase first?
         # TODO: Make them know to switch targets if another is closer?
         # TODO: Remove prey from state and calculations after captured
+
+
+    def initialize_predators(self):
+        predators = []
+        for pred_pos in self.Predator_Starts.values():
+            p = Predator(pred_pos)
+            prey = []
+            for prey_pos in self.Prey_Starts.values():
+                prey.append(prey_pos)
+            p.assign_targets(prey)
+            p.asses_targets()
+            predators.append(p)
+        return predators
+
+    def initialize_prey(self):
+        prey = []
+        for p in self.Prey_Starts.values():
+            prey_movts = []
+            [prey_movts.append(step) for step in utility.spawn_random_walk(p, self.N_Steps)]
+            pobj = Prey(p)
+            pobj.steps = prey_movts
+            prey.append(pobj)
+        return prey
+
 
 def main():
     # Define World Parameters
@@ -93,11 +188,11 @@ def main():
     height = 250
 
     N_Predators = 2
-    N_Prey = 3
+    N_Prey = 30
 
     # Simulation Parameters
     N_Steps = 200
-    pred_starts_random = False
+    pred_starts_random = True
     prey_starts_random = True
     predator_starts = {}
     prey_starts = {}
@@ -113,6 +208,7 @@ def main():
 
     CC = ComplexChase(simulation_data)
     CC.run()
+
 
 if __name__ == '__main__':
     main()

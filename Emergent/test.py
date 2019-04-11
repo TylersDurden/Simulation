@@ -74,9 +74,9 @@ def split_cloud(initial_state, show):
 
 def main():
     T0 = time.time()
-    N_RED = 750
-    N_GRN = 250
-    N_BLU = 350
+    N_RED = 45
+    N_GRN = 25
+    N_BLU = 35
 
     RSteps = 10
     GSteps = 10
@@ -85,13 +85,15 @@ def main():
     width = 100
     height = 100
 
-    red_activation = 8
+    red_activation = 6
     green_activation = 6
-    blue_activation = 4
+    blue_activation = 6
 
     k0 = [[1,1,1],
           [1,1,1],
           [1,1,1]]
+
+    k2 = [[]]
 
     test_config = {'nred': N_RED,
                    'ngrn': N_GRN,
@@ -100,7 +102,7 @@ def main():
                    'bsteps': BSteps,
                    'rsteps': RSteps}
 
-    cloud, particles = build_cloud([width, height], config=test_config, show=False)
+    cloud, particles = build_cloud([75, 75], config=test_config, show=False)
     state = pad_cloud(width, height, particles)
     dims = state.shape
     rch, gch, bch = split_cloud(state, False)
@@ -110,37 +112,42 @@ def main():
     print 'Starting Simulation \033[1m\033[31m['+str(time.time()-T0)+'s Elapsed]\033[0m'
     f = plt.figure()
     film = []
+    film.append(state)
     try:
-        for step in range(60):
-            rch = state[:,:,0]
-            gch = state[:,:,1]
-            bch = state[:,:,2]
-            R = ndi.convolve(np.array(rch), k0)
-            G = ndi.convolve(np.array(gch), k0)
-            B = ndi.convolve(np.array(bch), k0)
+        for step in range(56):
+            rch = state[:, :, 0]
+            gch = state[:, :, 1]
+            bch = state[:, :, 2]
+
             state = np.zeros(dims)
-            state[:, :, 0] = R
-            state[:, :, 1] = G
-            state[:, :, 2] = B
+            state[:, :, 0] = ndi.convolve(np.array(rch), k0)
+            state[:, :, 1] = ndi.convolve(np.array(gch), k0)
+            state[:, :, 2] = ndi.convolve(np.array(bch), k0)
             for i in range(N):
                 [x, y] = imutil.ind2sub(i, dims)
                 red_cell = state[x, y, 0]
                 grn_cell = state[x, y, 1]
                 blu_cell = state[x, y, 2]
-                if red_cell > red_activation:
-                    state[x, y, :] = green
-                if grn_cell > green_activation:
-                    state[x, y, :] = blue
-                if blu_cell > blue_activation:
-                    state[x, y, :] = red
+                if red_cell >= red_activation:
+                    state[x, y, :] = [0, 1, 0]
+                else:
+                    state[x,y,:] = [0, 0, 0]
+                if grn_cell >= green_activation:
+                    state[x, y, :] = [0, 0, 1]
+                else:
+                    state[x, y, :] = [0, 0, 0]
+                if blu_cell >= blue_activation:
+                    state[x, y, :] = [1, 0, 0]
+                else:
+                    state[x, y, :] = [0, 0, 0]
             film.append([plt.imshow(state)])
     except KeyboardInterrupt:
         print '\033[1m'+str(step) + '\033[0m Steps Simulated \033[1m\033[31m'+str(time.time()-T0)+'s Elapsed'
         pass
     print 'Rendering Simulation \033[1m\033[31m['+str(time.time()-T0)+'s Elapsed]\033[0m'
-    a = animation.ArtistAnimation(f,film,interval=100,blit=True,repeat_delay=900)
-    w = FFMpegWriter(fps=100,bitrate=1800)
-    a.save('color_automata_simulation.mp4',writer=w)
+    a = animation.ArtistAnimation(f,film,interval=700,blit=True,repeat_delay=900)
+    w = FFMpegWriter(fps=100, bitrate=5400)
+    a.save('color_automata_simulation2.mp4',writer=w)
     print 'Finished \033[1m\033[31m['+str(time.time()-T0)+'s Elapsed]\033[0m'
     plt.show()
 

@@ -7,15 +7,15 @@ import imutil
 import time
 
 
-red = np.zeros((1,1,3))
-green = np.zeros((1,1,3))
-blue = np.zeros((1,1,3))
-red[:,:,0] = 1
-green[:,:,1] = 1
-blue[:,:,2] = 1
+red = np.zeros((1, 1, 3))
+green = np.zeros((1, 1, 3))
+blue = np.zeros((1, 1, 3))
+red[:, :, 0] = 1
+green[:, :, 1] = 1
+blue[:, :, 2] = 1
 
 
-def build_cloud(dims,config,show):
+def build_cloud(dims, config, show):
     # Load Test Configuration
     n_red = config['nred']
     n_blu = config['nblu']
@@ -47,10 +47,10 @@ def build_cloud(dims,config,show):
     return color_cloud, state
 
 
-def pad_cloud(width,height,particles):
+def pad_cloud(width, height, particles):
     initial_state = np.zeros((width + width / 2, height + height / 2, 3))
     initial_state[width / 4:width / 4 + particles.shape[0],
-    height / 4:height / 4 + particles.shape[1], :] = particles[:, :, :]
+                  height / 4:height / 4 + particles.shape[1], :] = particles[:, :, :]
     return initial_state
 
 
@@ -73,27 +73,30 @@ def split_cloud(initial_state, show):
 
 
 def main():
-    T0 = time.time()
-    N_RED = 45
-    N_GRN = 25
-    N_BLU = 35
+    t0 = time.time()
+    N_RED = 145
+    N_GRN = 155
+    N_BLU = 145
 
     RSteps = 10
     GSteps = 10
     BSteps = 10
 
-    width = 100
-    height = 100
+    width = 120
+    height = 120
 
-    red_activation = 6
-    green_activation = 6
-    blue_activation = 6
+    red_activation = 4
+    green_activation = 4
+    blue_activation = 3
 
     k0 = [[1,1,1],
           [1,1,1],
           [1,1,1]]
 
-    k2 = [[]]
+    k2 = [[1,1,1,1],
+          [1,0,0,1],
+          [1,0,0,1],
+          [1,1,1,1]]
 
     test_config = {'nred': N_RED,
                    'ngrn': N_GRN,
@@ -102,53 +105,53 @@ def main():
                    'bsteps': BSteps,
                    'rsteps': RSteps}
 
-    cloud, particles = build_cloud([75, 75], config=test_config, show=False)
+    cloud, particles = build_cloud([100, 100], config=test_config, show=False)
     state = pad_cloud(width, height, particles)
     dims = state.shape
     rch, gch, bch = split_cloud(state, False)
+    initial_state = state  # Save for later
+    n = len(np.array(rch).flatten())
 
-    N = len(np.array(rch).flatten())
-
-    print 'Starting Simulation \033[1m\033[31m['+str(time.time()-T0)+'s Elapsed]\033[0m'
+    print 'Starting Simulation \033[1m\033[31m['+str(time.time()-t0)+'s Elapsed]\033[0m'
     f = plt.figure()
-    film = []
-    film.append(state)
+    film = list()
+    film.append([plt.imshow(state)])
+    step = 0
     try:
-        for step in range(56):
+        for step in range(10):
             rch = state[:, :, 0]
             gch = state[:, :, 1]
             bch = state[:, :, 2]
 
             state = np.zeros(dims)
+            world = np.zeros(dims)
             state[:, :, 0] = ndi.convolve(np.array(rch), k0)
             state[:, :, 1] = ndi.convolve(np.array(gch), k0)
             state[:, :, 2] = ndi.convolve(np.array(bch), k0)
-            for i in range(N):
+            for i in range(n):
                 [x, y] = imutil.ind2sub(i, dims)
                 red_cell = state[x, y, 0]
                 grn_cell = state[x, y, 1]
                 blu_cell = state[x, y, 2]
-                if red_cell >= red_activation:
-                    state[x, y, :] = [0, 1, 0]
-                else:
-                    state[x,y,:] = [0, 0, 0]
-                if grn_cell >= green_activation:
-                    state[x, y, :] = [0, 0, 1]
-                else:
-                    state[x, y, :] = [0, 0, 0]
-                if blu_cell >= blue_activation:
-                    state[x, y, :] = [1, 0, 0]
-                else:
-                    state[x, y, :] = [0, 0, 0]
-            film.append([plt.imshow(state)])
+                if red_cell >= red_activation and grn_cell < green_activation and blu_cell < blue_activation:
+                    world[x, y, :] = [0, 1, 0]
+                if grn_cell >= green_activation and red_cell < red_activation and blu_cell < blue_activation:
+                    world[x, y, :] = [0, 0, 1]
+                if blu_cell >= blue_activation and red_cell < red_activation and grn_cell < green_activation:
+                    world[x, y, :] = [1, 0, 0]
+            film.append([plt.imshow(world)])
     except KeyboardInterrupt:
-        print '\033[1m'+str(step) + '\033[0m Steps Simulated \033[1m\033[31m'+str(time.time()-T0)+'s Elapsed'
+        print '\033[1m'+str(step) + '\033[0m Steps Simulated \033[1m\033[31m'+str(time.time()-t0)+'s Elapsed'
         pass
-    print 'Rendering Simulation \033[1m\033[31m['+str(time.time()-T0)+'s Elapsed]\033[0m'
-    a = animation.ArtistAnimation(f,film,interval=700,blit=True,repeat_delay=900)
-    w = FFMpegWriter(fps=100, bitrate=5400)
-    a.save('color_automata_simulation2.mp4',writer=w)
-    print 'Finished \033[1m\033[31m['+str(time.time()-T0)+'s Elapsed]\033[0m'
+
+    print 'Rendering Simulation \033[1m\033[31m['+str(time.time()-t0)+'s Elapsed]\033[0m'
+    a = animation.ArtistAnimation(f, film, interval=750, blit=True, repeat_delay=900)
+    w = FFMpegWriter(fps=2, bitrate=1800)
+    a.save('cas_k1.mp4', writer=w)
+    print 'Finished \033[1m\033[31m['+str(time.time()-t0)+'s Elapsed]\033[0m'
+    plt.show()
+    plt.imshow(initial_state)
+    plt.title('Initial State')
     plt.show()
 
 

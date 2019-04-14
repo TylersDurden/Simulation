@@ -3,7 +3,7 @@ import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 import scipy.ndimage as ndi
 import numpy as np
-import imutil
+import utility as imutil
 import time
 
 
@@ -133,11 +133,11 @@ def main():
                 red_cell = state[x, y, 0]
                 grn_cell = state[x, y, 1]
                 blu_cell = state[x, y, 2]
-                if red_cell >= red_activation and grn_cell < green_activation or blu_cell < blue_activation:
+                if red_cell >= red_activation and grn_cell < green_activation and blu_cell < blue_activation:
                     world[x, y, :] = [0, 1, 0]
-                if grn_cell >= green_activation and red_cell < red_activation or blu_cell < blue_activation:
+                if grn_cell >= green_activation and red_cell < red_activation and blu_cell < blue_activation:
                     world[x, y, :] = [0, 0, 1]
-                if blu_cell >= blue_activation or red_cell < red_activation and grn_cell < green_activation:
+                if blu_cell >= blue_activation and red_cell < red_activation and grn_cell < green_activation:
                     world[x, y, :] = [1, 0, 0]
             film.append([plt.imshow(world)])
     except KeyboardInterrupt:
@@ -147,7 +147,7 @@ def main():
     print 'Rendering Simulation \033[1m\033[31m['+str(time.time()-t0)+'s Elapsed]\033[0m'
     a = animation.ArtistAnimation(f, film, interval=750, blit=True, repeat_delay=900)
     w = FFMpegWriter(fps=2, bitrate=1800)
-    a.save('cas0.mp4', writer=w)
+    #a.save('cas0.mp4', writer=w)
     print 'Finished \033[1m\033[31m['+str(time.time()-t0)+'s Elapsed]\033[0m'
     plt.show()
     plt.imshow(initial_state)

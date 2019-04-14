@@ -55,14 +55,15 @@ class StandardModel:
             return ''
         a = str(collision[0]).upper()
         b = str(collision[1]).upper()
-        event = [a,b, '+']
+        event = [a, b, '+']
         # Isolate all additive events (collisions)
         combos = []
-        [combos.append(list(combo)) for combo in combinations(self.elementary,2)]
+        [combos.append(list(combo)) for combo in combinations(self.elementary, 2)]
+        events = {}
+        ii = 0
         for pair in combos:
-            pair.append('+')
-            print pair
-        print [a, b]
+            events[ii] = pair.append('+')
+            ii += 1
 
 
 class RGB:

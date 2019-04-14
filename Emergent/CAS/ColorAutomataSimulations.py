@@ -1,10 +1,7 @@
-from matplotlib.animation import FFMpegWriter
-import matplotlib.animation as animation
-import matplotlib.pyplot as plt
-import scipy.ndimage as ndi
+from itertools import combinations
 import numpy as np
+import simengine
 import utility
-import time
 
 
 class StandardModel:
@@ -52,6 +49,21 @@ class StandardModel:
                  10: self.Red}
         return event_vectors, rules
 
+    def two_particle_collision(self, collision):
+        if len(collision) > 2:
+            print "More than two particles in collision"
+            return ''
+        a = str(collision[0]).upper()
+        b = str(collision[1]).upper()
+        event = [a,b, '+']
+        # Isolate all additive events (collisions)
+        combos = []
+        [combos.append(list(combo)) for combo in combinations(self.elementary,2)]
+        for pair in combos:
+            pair.append('+')
+            print pair
+        print [a, b]
+
 
 class RGB:
     R = [[]]
@@ -60,6 +72,7 @@ class RGB:
     Y = [[]]
     M = [[]]
     C = [[]]
+    handles = {}
 
     def __init__(self):
         self.initialize()
@@ -74,6 +87,12 @@ class RGB:
         self.Y = self.R + self.G
         self.M = self.R + self.B
         self.C = self.B + self.G
+        self.handles['r'] = self.R
+        self.handles['g'] = self.G
+        self.handles['b'] = self.B
+        self.handles['c'] = self.C
+        self.handles['m'] = self.M
+        self.handles['y'] = self.Y
 
 
 class Particle:
@@ -81,27 +100,39 @@ class Particle:
     x = 0
     y = 0
     internal_state = 0
+    steps = []
 
     def __init__(self, color_name, position):
         self.color = color_name
         self.x = position[0]
         self.y = position[1]
 
+    def generate_random_steps(self, nsteps):
+        self.steps, unused = utility.spawn_random_walk([self.x, self.y], nsteps)
+
+    def set_position(self, location):
+        self.x = location[0]
+        self.y = location[1]
+
 
 def main():
-    initial_config = {'width': 250,
-                      'height': 250,
+    initial_config = {'width': 150,
+                      'height': 150,
                       'n_particles': 300,
-                      'nRed': 100,
-                      'nGreen': 100,
+                      'timescale': 100,
+                      'nRed': 250,
+                      'nGreen': 120,
                       'nBlue': 100,
-                      'nYellow': 0,
-                      'nMagenta': 0,
-                      'nCyan': 0}
+                      'nYellow': 120,
+                      'nMagenta': 50,
+                      'nCyan': 0,
+                      'verbose': True}
 
-    casm = StandardModel()
     rgb = RGB()
-
+    sim = simengine.Engine(initial_config, rgb)
+    collisions = sim.run(rgb, False, save=False)
+    casm = StandardModel()
+    casm.two_particle_collision(collisions.pop(np.random.randint(0,len(collisions)-1,1)[0]))
 
 
 if __name__ == '__main__':

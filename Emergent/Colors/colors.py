@@ -12,6 +12,8 @@ class RGB:
     Y = [[]]
     M = [[]]
     C = [[]]
+    K = [[]]
+    W = [[]]
     handles = {}
 
     def __init__(self):
@@ -21,6 +23,8 @@ class RGB:
         self.R = np.zeros((1,1,3))
         self.G = np.zeros((1,1,3))
         self.B = np.zeros((1,1,3))
+        self.W = np.ones((1,1,3))
+        self.K = np.zeros((1,1,3))
         self.R[:, :, 0] = 1
         self.G[:, :, 1] = 1
         self.B[:, :, 2] = 1
@@ -33,5 +37,7 @@ class RGB:
         self.handles['c'] = self.C
         self.handles['m'] = self.M
         self.handles['y'] = self.Y
-        self.handles['k'] = np.zeros((1, 1, 3))
+        self.handles['k'] = self.K
+        self.handles['w'] = self.W
+
 

@@ -1,7 +1,9 @@
-from itertools import combinations
+import matplotlib.pyplot as plt
 import numpy as np
 import simengine
 import utility
+import time
+import sys
 
 
 class StandardModel:
@@ -14,7 +16,7 @@ class StandardModel:
     Black = [0, 0, 0]
     White = [1, 1, 1]
 
-    elementary = ['R', 'G', 'B', 'Y', 'P', 'T']
+    elementary = ['R', 'G', 'B', 'Y', 'M', 'C']
     operations = ['-', '+']
     events = {}
     rules = {}
@@ -25,45 +27,40 @@ class StandardModel:
     def initialize(self):
         event_vectors = {0: ['R', 'G', '+'],    # Red + Green
                          1: ['G', 'B', '+'],    # Green + Blue
-                         2: ['P', 'G', '+'],    # Purple + Green
+                         2: ['M', 'G', '+'],    # Purple + Green
                          3: ['Y', 'R', '+'],    # Yellow + Red
                          4: ['Y', 'G', '+'],    # Yellow + Green
-                         5: ['Y', 'P', '+'],    # Yellow + Purple (Green)
-                         6: ['Y', 'P', '-'],    # Yellow - Purple (Blue)
-                         7: ['T', 'G', '-'],    # Teal - Green (Blue)
-                         8: ['T', 'P', '-'],    # Teal - Purple (Green)
-                         9: ['Y', 'R', '-'],    # Yellow - Red (Green)
-                         10:['Y', 'G', '-']     # Yellow - Green (Red)
-                         }
+                         5: ['Y', 'M', '+'],    # Yellow + Purple (Green)
+                         6: ['R', 'B', '+'],
+                         7: ['M', 'G', '+'],
+                         8: ['M', 'R', '+'],
+                         9: ['W', 'R', '+'],
+                         10: ['W', 'G', '+'],
+                         11: ['W', 'B', '+'],
+                         12: ['W', 'M', '+'],
+                         13: ['W', 'Y', '+'],
+                         14: ['W', 'C', '+'],
+                         15: ['C', 'M', '+'],
+                         16: ['C', 'Y', '+']}
 
-        rules = {0: self.Blue,
-                 1: self.Yell,
-                 2: self.White,
-                 3: self.White,
-                 4: self.White,
-                 5: self.Green,
-                 6: self.Blue,
-                 7: self.Blue,
-                 8: self.Green,
-                 9: self.Green,
-                 10: self.Red}
+        rules = {0: 'y',
+                 1: 'c',
+                 2: 'w',
+                 3: 'r',
+                 4: 'y',
+                 5: 'w',
+                 6: 'm',
+                 7: 'w',
+                 8: 'y',
+                 9: 'r',
+                 10: 'g',
+                 11: 'b',
+                 12: 'm',
+                 13: 'y',
+                 14: 'c',
+                 15: 'w',
+                 16: 'w'}
         return event_vectors, rules
-
-    def two_particle_collision(self, collision):
-        if len(collision) > 2:
-            print "More than two particles in collision"
-            return ''
-        a = str(collision[0]).upper()
-        b = str(collision[1]).upper()
-        event = [a, b, '+']
-        # Isolate all additive events (collisions)
-        combos = []
-        [combos.append(list(combo)) for combo in combinations(self.elementary, 2)]
-        events = {}
-        ii = 0
-        for pair in combos:
-            events[ii] = pair.append('+')
-            ii += 1
 
 
 class RGB:
@@ -94,6 +91,7 @@ class RGB:
         self.handles['c'] = self.C
         self.handles['m'] = self.M
         self.handles['y'] = self.Y
+        self.handles['w'] = np.ones((1,1,3))
 
 
 class Particle:
@@ -117,23 +115,55 @@ class Particle:
 
 
 def main():
-    initial_config = {'width': 150,
-                      'height': 150,
-                      'n_particles': 300,
-                      'timescale': 100,
-                      'nRed': 250,
-                      'nGreen': 120,
-                      'nBlue': 100,
-                      'nYellow': 120,
-                      'nMagenta': 50,
-                      'nCyan': 0,
-                      'verbose': True}
+    if 'demo' in sys.argv:
+        initial_config = {'width': 250,
+                          'height': 250,
+                          'n_particles': 10,
+                          'timescale': 250,
+                          'nRed': 300,
+                          'nGreen': 300,
+                          'nBlue': 400,
+                          'nYellow': 0,
+                          'nMagenta': 0,
+                          'nCyan': 0,
+                          'verbose': True}
 
-    rgb = RGB()
-    sim = simengine.Engine(initial_config, rgb)
-    collisions = sim.run(rgb, False, save=False)
-    casm = StandardModel()
-    casm.two_particle_collision(collisions.pop(np.random.randint(0,len(collisions)-1,1)[0]))
+        rgb = RGB()
+        sim = simengine.Engine(initial_config, rgb)
+        collisions = sim.run(RGB=rgb, animate=True, save=True)
+        casm = StandardModel()
+        exit(0)
+    elif 'npVsz' in sys.argv:
+        rgb = RGB
+        const_time = 100
+        dims = [50,100,150,250,350,450,550]
+        np =   [10,20,30,40,50,100,500]
+        ncs = [['nRed','nBlue'],['nRed','nGreen'],
+               ['nRed','nBlue','nGreen'],['nCyan','nMagenta','nYellow'],
+               ['nRed','nBlue','nGreen','nCyan'],['nRed','nBlue','nGreen','nCyan','nMagenta'],
+               ['nRed','nBlue','nGreen','nCyan','nMagenta','nYellow']]
+        opts = ['nRed','nBlue','nGreen','nCyan','nMagenta','nYellow']
+        collision_data = []
+        runtime_data = []
+        for shape in dims:
+            width = shape
+            height = shape
+            for n_particles in np:
+                for particle_combos in ncs:
+                    config = {'width':width,
+                              'height':height,
+                              'n_particles':n_particles,
+                              'timescale':const_time}
+                    # TODO: Automate nColor selections
+                    config['verbose'] = False
+                    tic = time.time()
+                    collisions = simengine.Engine(config, rgb).run(RGB=rgb,animate=False,save=False)
+                    toc = time.time()
+                    runtime_data.append(float(toc-tic))
+                    collision_data.append(float(collisions))
+        plt.plot(np.array(collision_data))
+        plt.plot(np.array(runtime_data))
+        plt.show()
 
 
 if __name__ == '__main__':

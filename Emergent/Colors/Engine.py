@@ -4,54 +4,110 @@ import scipy.ndimage as ndi
 import imutil
 import Engine
 import Logic
+import colors
 
 
-class Colors:
+class Particle:
+    color = ''
+    x = 0
+    y = 0
+    loc = []
 
-    r = np.zeros((1, 1, 3))
-    g = np.zeros((1, 1, 3))
-    b = np.zeros((1, 1, 3))
-    c = np.zeros((1, 1, 3))
-    m = np.zeros((1, 1, 3))
-    y = np.zeros((1, 1, 3))
-    k = np.zeros((1, 1, 3))
-
-    r3 = np.zeros((3, 3, 3))
-    g3 = np.zeros((3, 3, 3))
-    b3 = np.zeros((3, 3, 3))
-    c3 = np.zeros((3, 3, 3))
-    m3 = np.zeros((3, 3, 3))
-    y3 = np.zeros((3, 3, 3))
-    k3 = np.zeros((3, 3, 3))
-
-    def __init__(self):
-        self.initialize()
-        self.show_colors()
-
-    def initialize(self):
-        self.r[:, :, :] = [1, 0, 0]
-        self.g[:, :, :] = [0, 1, 0]
-        self.b[:, :, :] = [0, 0, 1]
-        self.c[:, :, :] = [0, 1, 1]
-        self.m[:, :, :] = [1, 0, 1]
-        self.y[:, :, :] = [1, 1, 0]
-
-        self.r3[1, 1, :] = [1, 0, 0]
-        self.g3[1, 1, :] = [0, 1, 0]
-        self.b3[1, 1, :] = [0, 0, 1]
-        self.c3[1, 1, :] = [0, 1, 1]
-        self.m3[1, 1, :] = [1, 0, 1]
-        self.y3[1, 1, :] = [1, 1, 0]
-
-    def show_colors(self):
-        f, ax = plt.subplots(2, 3)
-        ax[0, 0].imshow(self.r)
-        ax[0, 1].imshow(self.g)
-        ax[0, 2].imshow(self.b)
-        ax[1, 0].imshow(self.c)
-        ax[1, 1].imshow(self.m)
-        ax[1, 2].imshow(self.y)
-        plt.show()
+    def __init__(self, label, position):
+        if len(position) == 2:
+            self.color = label
+            self.x = position[0]
+            self.y = position[1]
+            self.loc = position
+        else:
+            print "Illegal Construction!"
+            exit(0)
 
 
-Colors()
+class Engine:
+    config = {}
+    width = 0
+    height = 0
+    n_particles = 0
+    timescale = 0
+    particle_counts = {'r': 0, 'g': 0, 'b': 0,
+                       'c': 0, 'm': 0, 'y': 0}
+    verbose = False
+
+    def __init__(self, config):
+        self.initialize(config)
+
+    def initialize(self, config):
+        self.width = config['width']
+        self.height = config['height']
+        self.n_particles = config['n_particles']
+        self.add_particles(config)
+
+    def add_particles(self, config):
+        if 'verbose' in config.keys():
+            self.verbose = config['verbose']
+        if 'nRed' in config.keys():
+            self.particle_counts['r'] = config['nRed']
+            if self.verbose:
+                print "\033[1m* \033[31m" + str(config['nRed']) + ' Red Particles added\033[0m'
+        if 'nGreen' in config.keys():
+            self.particle_counts['g'] = config['nGreen']
+            if self.verbose:
+                print "\033[1m* \033[32m" + str(config['nGreen']) + ' Green Particles added\033[0m'
+        if 'nBlue' in config.keys():
+            self.particle_counts['b'] = config['nBlue']
+            if self.verbose:
+                print "\033[1m* \033[34m" + str(config['nBlue']) + ' Blue Particles added\033[0m'
+        if 'nCyan' in config.keys():
+            self.particle_counts['c'] = config['nCyan']
+            if self.verbose:
+                print "\033[1m* \033[36m" + str(config['nCyan']) + ' Cyan Particles added\033[0m'
+        if 'nMagenta' in config.keys():
+            self.particle_counts['m'] = config['nMagenta']
+            if self.verbose:
+                print "\033[1m* \033[35m" + str(config['nMagenta']) + ' Magenta Particles added\033[0m'
+
+    def construct_cloud(self):
+        has_time = False
+        try:
+            self.timescale = self.config['timescale']
+            if self.verbose:
+                print '* Constructing Simulation with ' + str(self.timescale) + " time steps "
+            has_time = True
+        except KeyError:
+            pass
+
+        world = np.zeros((self.width, self.height, 3))
+        cloud = {}
+        rgb = colors.RGB()
+        rgb.initialize()
+        ii = 0
+        for ptype in self.particle_counts.keys():
+            color = rgb.handles[ptype]
+            for particle in range(self.particle_counts[ptype]):
+                pt = imutil.spawn_random_point(world)
+                obj = Particle(ptype, pt)
+                if has_time:
+                    obj.generate_random_steps(self.timescale)
+                world[pt[0], pt[1], :] = color[:, :, :]
+                cloud[ii] = obj
+                ii += 1
+        return world, cloud
+
+
+size = 250
+n_particles = 1000
+test_config = {'width': size,
+                'height': size,
+                'n_particles': 100,
+                'timescale': 100,
+                'nRed': n_particles / 3,
+                'nGreen': n_particles / 3,
+                'nBlue': n_particles / 3,
+                'nYellow': 0,
+                'nCyan': 0,
+                'nMagenta': 0,
+                'verbose': True}
+
+sim = Engine(test_config)
+state, cloud = sim.construct_cloud()
